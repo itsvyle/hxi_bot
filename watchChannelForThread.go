@@ -3,6 +3,7 @@ package main
 import (
 	"log/slog"
 	"os"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -20,6 +21,8 @@ func InitWatchChannelForThread(discordSession *discordgo.Session) {
 		if message.Author.ID == session.State.User.ID {
 			return
 		}
+
+		time.Sleep(1*time.Second)
 
 		thread, err := session.MessageThreadStartComplex(message.ChannelID, message.ID, &discordgo.ThreadStart{
 			Name:                message.Content,
