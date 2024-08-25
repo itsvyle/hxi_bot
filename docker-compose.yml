@@ -1,0 +1,10 @@
+services:
+  hxi_bot:
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - path: .env
+        required: true
+
