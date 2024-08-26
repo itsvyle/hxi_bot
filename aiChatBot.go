@@ -181,6 +181,8 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 		}
 
 		res := resp.Choices[0].Message.Content
+		res = strings.Replace(res, "@everyone", "`@everyone`", -1)
+		res = strings.Replace(res, "@here", "`@here`", -1)
 
 		slog.Info("AI response", "response", res)
 
