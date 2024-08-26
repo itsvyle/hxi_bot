@@ -77,7 +77,7 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 		slog.Info("------------------------------------------------")
 
 		if message.Author.Bot {
-			if strings.Contains(message.Content, "!start") {
+			if strings.Contains(message.Content, fmt.Sprintf("<@%s> !start",s.myID)) {
 				for _, convo := range ongoingConversations {
 					if convo.OtherBotID == message.Author.ID {
 						_, _ = session.ChannelMessageSendReply(message.ChannelID, "Already in a conversation with this bot", message.Reference())
