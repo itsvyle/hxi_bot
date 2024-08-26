@@ -41,10 +41,12 @@ func CreateNewServiceAiChatBot(config *config.ConfigSchemaJsonAiChatServicesElem
 }
 
 type BotToBotConvo struct {
+	SelfStarted   bool
 	OtherBotID    string
 	ChannelID     string
 	TotalAmount   int
 	CurrentAmount int
+	StartedAt     time.Time
 }
 
 func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
@@ -77,6 +79,7 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 				for _, convo := range ongoingConversations {
 					if convo.OtherBotID == message.Author.ID {
 						_, _ = session.ChannelMessageSendReply(message.ChannelID, "Already in a conversation with this bot", message.Reference())
+						slog.Info("Already in a conversation with this bot", "botID", message.Author.ID)
 						return
 					}
 				}
@@ -93,23 +96,28 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 				}
 				slog.Info("Received conversation start request", "botID", message.Author.ID, "amount", amount)
 				ongoingConversations = append(ongoingConversations, &BotToBotConvo{
+					SelfStarted:   false,
 					OtherBotID:    message.Author.ID,
 					ChannelID:     message.ChannelID,
 					TotalAmount:   amount,
 					CurrentAmount: 0,
+					StartedAt:     time.Now(),
 				})
 				return
 			}
 			foundConvo := false
-			for i, convo := range ongoingConversations {
+			for _, convo := range ongoingConversations {
 				if convo.OtherBotID == message.Author.ID && convo.ChannelID == message.ChannelID {
 					convo.CurrentAmount++
 					if convo.CurrentAmount >= convo.TotalAmount {
+						slog.Info("Conversation ended", "botID", message.Author.ID, "currentAmount", convo.CurrentAmount, "totalAmount", convo.TotalAmount)
 						// Delete this conversation
 						o := make([]*BotToBotConvo, int(math.Max(0, float64(len(ongoingConversations)-1))))
-						for j, c := range ongoingConversations {
-							if j != i {
+						j := 0
+						for _, c := range ongoingConversations {
+							if c.OtherBotID != message.Author.ID {
 								o[j] = c
+								j++
 							}
 						}
 						ongoingConversations = o
@@ -242,10 +250,12 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 		slog.Info("Starting conversation", "botID", otherBot.ID, "amount", amount, "firstMessage", firstMessage)
 
 		ongoingConversations = append(ongoingConversations, &BotToBotConvo{
+			SelfStarted:   true,
 			OtherBotID:    otherBot.ID,
 			ChannelID:     channelID,
 			TotalAmount:   int(amount),
 			CurrentAmount: 0,
+			StartedAt:     time.Now(),
 		})
 
 		_, err := session.ChannelMessageSend(channelID, fmt.Sprintf("<@%s> !start %d", otherBot.ID, amount))
