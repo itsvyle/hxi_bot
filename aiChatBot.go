@@ -77,7 +77,7 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 		slog.Info("------------------------------------------------")
 
 		if message.Author.Bot {
-			if strings.Contains(message.Content, fmt.Sprintf("<@%s> !start",s.myID)) {
+			if strings.Contains(message.Content, fmt.Sprintf("<@%s> !start", s.myID)) {
 				for _, convo := range ongoingConversations {
 					if convo.OtherBotID == message.Author.ID {
 						_, _ = session.ChannelMessageSendReply(message.ChannelID, "Already in a conversation with this bot", message.Reference())
@@ -199,6 +199,11 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 			return
 		}
 		cmdName := interaction.ApplicationCommandData().Name
+		if cmdName == "chatbotconfig" {
+			s.sendConfig(session, interaction)
+			return
+		}
+
 		if cmdName != "convo" {
 			_ = session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -394,7 +399,13 @@ func reverseArray[E any](arr []E) []E {
 }
 
 func (s *ServiceAiChatBot) InitCommands(session *discordgo.Session) {
-	payload := []*discordgo.ApplicationCommand{}
+	payload := []*discordgo.ApplicationCommand{
+		{
+			Name:        "chatbotconfig",
+			Description: "Get the configuration of the chatbot",
+			Type:        discordgo.ChatApplicationCommand,
+		},
+	}
 
 	if s.config.ActivateAutoConvos {
 		payload = append(payload, &discordgo.ApplicationCommand{
@@ -430,4 +441,40 @@ func (s *ServiceAiChatBot) InitCommands(session *discordgo.Session) {
 		panic(err)
 	}
 	slog.With("commandsCount", len(payload)).Info("Initialized commands")
+}
+
+type ChatbotPublicConfig struct {
+	BotName                string  `json:"botName"`
+	Prompt                 string  `json:"prompt"`
+	MaxTokens              int     `json:"maxTokens"`
+	Temperature            float64 `json:"temperature"`
+	AutoConvosMessageDelay int     `json:"autoConvosMessageDelay"`
+	ActivateAutoConvos     bool    `json:"activateAutoConvos"`
+	MaxContextSize         int     `json:"maxContextSize"`
+}
+
+func (s *ServiceAiChatBot) sendConfig(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
+	res := ""
+	config := &ChatbotPublicConfig{
+		BotName:                s.config.BotName,
+		Prompt:                 s.config.Prompt,
+		MaxTokens:              s.config.MaxTokens,
+		Temperature:            s.config.Temperature,
+		AutoConvosMessageDelay: s.config.AutoConvosMessageDelay,
+		ActivateAutoConvos:     s.config.ActivateAutoConvos,
+		MaxContextSize:         s.config.MaxContextSize,
+	}
+	configBytes, err := json.MarshalIndent(config, "", "  ")
+	if err != nil {
+		slog.With("error", err).Error("Error marshalling config")
+		res = "Error getting config"
+	} else {
+		res = "```json\n" + string(configBytes) + "\n```"
+	}
+	_ = session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: res,
+		},
+	})
 }

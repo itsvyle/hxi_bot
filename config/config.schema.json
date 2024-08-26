@@ -55,7 +55,7 @@
                     },
                     "killers": {
                         "type": "array",
-                        "description": "List of user ids that can kill the bot",
+                        "description": "List of user ids that can !kill the bot",
                         "items": {
                             "type": "string"
                         },
