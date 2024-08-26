@@ -9,7 +9,7 @@ services:
             - path: ../.env
               required: true
         volumes:
-            - "./configs/config-estebangpt.json:/app/config.json"
+            - "./config-estebangpt.json:/app/config.json"
     eg2:
         container_name: eg2
         # restart: always
@@ -20,4 +20,4 @@ services:
             - path: ../.env
               required: true
         volumes:
-            - "./configs/config-estebangptTest.json:/app/config.json"
+            - "./config-estebangptTest.json:/app/config.json"
