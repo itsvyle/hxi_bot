@@ -52,6 +52,14 @@
                     "temperature": {
                         "type": "number",
                         "default": 0.8
+                    },
+                    "killers": {
+                        "type": "array",
+                        "description": "List of user ids that can kill the bot",
+                        "items": {
+                            "type": "string"
+                        },
+                        "default": []
                     }
                 },
                 "required": [

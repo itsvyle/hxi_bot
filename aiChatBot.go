@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"os"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
@@ -55,6 +56,16 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 			}
 			if !mentionsMe {
 				return
+			}
+		}
+
+		if strings.Contains(message.Content, "kill") {
+			for _, id := range s.config.Killers {
+				if message.Author.ID == id {
+					_, _ = session.ChannelMessageSendReply(message.ChannelID, "Je meurs (pour de vrai)....", message.Reference())
+					os.Exit(0)
+					return
+				}
 			}
 		}
 

@@ -24,6 +24,9 @@ type ConfigSchemaJsonAiChatServicesElem struct {
 	// BotName corresponds to the JSON schema field "botName".
 	BotName string `json:"botName" yaml:"botName" mapstructure:"botName"`
 
+	// List of user ids that can kill the bot
+	Killers []string `json:"killers,omitempty" yaml:"killers,omitempty" mapstructure:"killers,omitempty"`
+
 	// MaxContextSize corresponds to the JSON schema field "maxContextSize".
 	MaxContextSize int `json:"maxContextSize,omitempty" yaml:"maxContextSize,omitempty" mapstructure:"maxContextSize,omitempty"`
 
@@ -65,6 +68,9 @@ func (j *ConfigSchemaJsonAiChatServicesElem) UnmarshalJSON(b []byte) error {
 	var plain Plain
 	if err := json.Unmarshal(b, &plain); err != nil {
 		return err
+	}
+	if v, ok := raw["killers"]; !ok || v == nil {
+		plain.Killers = []string{}
 	}
 	if v, ok := raw["maxContextSize"]; !ok || v == nil {
 		plain.MaxContextSize = 5.0

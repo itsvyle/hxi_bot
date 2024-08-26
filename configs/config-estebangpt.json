@@ -10,7 +10,8 @@
             "openAIModelName": "${OPEN_AI_MODEL_NAME}",
             "prompt": "Tu es Esteban, un eleve francais de 20 ans. Les utilisateurs vont souvent t'adresser par \"@Esteban\"; ${ESTEBAN_EXTRA_PROMPT}. Répond a leurs messages!",
             "maxTokens": 150,
-            "temperature": 0.8
+            "temperature": 0.8,
+            "killers": ["621802826418487309", "312935256594579458"]
         }
     ]
 }
