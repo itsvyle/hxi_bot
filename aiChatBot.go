@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/itsvyle/hxi_bot/config"
@@ -37,13 +38,22 @@ func CreateNewServiceAiChatBot(config *config.ConfigSchemaJsonAiChatServicesElem
 	}
 }
 
+type BotToBotConvo struct {
+	OtherBotID    string
+	ChannelID     string
+	TotalAmount   int
+	CurrentAmount int
+}
+
 func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 	s.openAIClient = openai.NewClient(s.config.OpenAIAPiKey)
 
 	s.botTrigger = fmt.Sprintf("<@%s>", discordSession.State.User.ID)
 
+	ongoingConversations := make([]*BotToBotConvo, 0)
+
 	discordSession.AddHandler(func(session *discordgo.Session, message *discordgo.MessageCreate) {
-		if message.Author.ID == session.State.User.ID || message.Author.Bot {
+		if message.Author.ID == session.State.User.ID {
 			return
 		}
 		if !strings.Contains(message.Content, s.botTrigger) {
@@ -59,14 +69,65 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 			}
 		}
 
-		if strings.Contains(message.Content, "kill") {
+		if message.Author.Bot {
+			if strings.Contains(message.Content, "!start") {
+				for _, convo := range ongoingConversations {
+					if convo.OtherBotID == message.Author.ID {
+						_, _ = session.ChannelMessageSendReply(message.ChannelID, "Already in a conversation with this bot", message.Reference())
+						return
+					}
+				}
+
+				splits := strings.Split(message.Content, "!start")
+				if len(splits) < 2 {
+					return
+				}
+				amount := 0
+				_, err := fmt.Sscanf(strings.TrimSpace(splits[1]), "%d", &amount)
+				if err != nil {
+					slog.With("error", err).Error("Error parsing amount")
+					return
+				}
+
+				ongoingConversations = append(ongoingConversations, &BotToBotConvo{
+					OtherBotID:    message.Author.ID,
+					ChannelID:     message.ChannelID,
+					TotalAmount:   amount,
+					CurrentAmount: 0,
+				})
+				return
+			}
+			foundConvo := false
+			for _, convo := range ongoingConversations {
+				if convo.OtherBotID == message.Author.ID && convo.ChannelID == message.ChannelID {
+					convo.CurrentAmount++
+					if convo.CurrentAmount >= convo.TotalAmount {
+						return
+					}
+					foundConvo = true
+					break
+				}
+			}
+			if !foundConvo {
+				return
+			}
+			time.Sleep(3 * time.Second)
+		}
+
+		if strings.Contains(message.Content, "!kill") {
 			for _, id := range s.config.Killers {
 				if message.Author.ID == id {
+					slog.Info("Killed by user", "userID", id)
 					_, _ = session.ChannelMessageSendReply(message.ChannelID, "Je meurs (pour de vrai)....", message.Reference())
 					os.Exit(0)
 					return
 				}
 			}
+		}
+		if strings.Contains(message.Content, "!stop") {
+			ongoingConversations = ongoingConversations[:0]
+			_, _ = session.ChannelMessageSendReply(message.ChannelID, "Stopped all ongoing conversations", message.Reference())
+			return
 		}
 
 		slog.Info("------------------------------------------------")
@@ -110,6 +171,93 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 		}
 		s.appendToCache(newM)
 	})
+
+	discordSession.AddHandler(func(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
+		if interaction.Type != discordgo.InteractionApplicationCommand {
+			return
+		}
+		cmdName := interaction.ApplicationCommandData().Name
+		if cmdName != "startconvo" {
+			return
+		}
+
+		otherBot := interaction.ApplicationCommandData().Options[0].UserValue(session)
+		amount := interaction.ApplicationCommandData().Options[1].IntValue()
+		firstMessage := interaction.ApplicationCommandData().Options[2].StringValue()
+		channelID := interaction.ChannelID
+
+		if !otherBot.Bot {
+			_ = session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content: "The specified user isn't a bot",
+					Flags:   discordgo.MessageFlagsEphemeral,
+				},
+			})
+			return
+		}
+		if amount < 1 || amount > 25 {
+			_ = session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content: "Amount must be between 1 and 25",
+					Flags:   discordgo.MessageFlagsEphemeral,
+				},
+			})
+			return
+		}
+
+		for _, convo := range ongoingConversations {
+			if convo.OtherBotID == otherBot.ID {
+				_ = session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Content: "There is already an ongoing conversation with this bot",
+						Flags:   discordgo.MessageFlagsEphemeral,
+					},
+				})
+				return
+			}
+		}
+
+		ongoingConversations = append(ongoingConversations, &BotToBotConvo{
+			OtherBotID:    otherBot.ID,
+			ChannelID:     channelID,
+			TotalAmount:   int(amount),
+			CurrentAmount: 0,
+		})
+
+		_, err := session.ChannelMessageSend(channelID, fmt.Sprintf("<@%s> !start %d", otherBot.ID, amount))
+		if err != nil {
+			slog.With("error", err).Error("Error staring conversation")
+			_ = session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content: "Error starting conversation",
+					Flags:   discordgo.MessageFlagsEphemeral,
+				},
+			})
+			return
+		}
+
+		time.Sleep(2 * time.Second)
+
+		_, err = session.ChannelMessageSend(channelID, fmt.Sprintf("<@%s> %s", otherBot.ID, firstMessage))
+		if err != nil {
+			slog.With("error", err).Error("Error staring conversation")
+			_ = session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content: "Error starting conversation",
+					Flags:   discordgo.MessageFlagsEphemeral,
+				},
+			})
+			return
+		}
+
+	})
+
+	s.InitCommands(discordSession)
 
 	slog.Info("Initialized AI chat bot", "botName", s.config.BotName, "prompt", s.config.Prompt)
 }
@@ -161,7 +309,7 @@ func (s *ServiceAiChatBot) getMessageChain(discordSession *discordgo.Session, me
 	}
 
 	for m.References != "" && i < s.config.MaxContextSize {
-		m = s.getMessageContent(m.References, message.ChannelID, discordSession)
+		m = s.getMessageCached(m.References, message.ChannelID, discordSession)
 		if m == nil {
 			return reverseArray(r)
 		}
@@ -179,7 +327,7 @@ func (s *ServiceAiChatBot) getMessageChain(discordSession *discordgo.Session, me
 	return reverseArray(r)
 }
 
-func (s *ServiceAiChatBot) getMessageContent(messageID string, channelID string, discordSession *discordgo.Session) *AIChatbotCachedMessage {
+func (s *ServiceAiChatBot) getMessageCached(messageID string, channelID string, discordSession *discordgo.Session) *AIChatbotCachedMessage {
 	for i := len(s.cache) - 1; i >= 0; i-- {
 		if s.cache[i].ID == messageID && s.cache[i].ChannelID == channelID {
 			return s.cache[i]
@@ -201,4 +349,43 @@ func reverseArray[E any](arr []E) []E {
 		arr[i], arr[j] = arr[j], arr[i]
 	}
 	return arr
+}
+
+func (s *ServiceAiChatBot) InitCommands(session *discordgo.Session) {
+	payload := []*discordgo.ApplicationCommand{}
+
+	if s.config.ActivateAutoConvos {
+		payload = append(payload, &discordgo.ApplicationCommand{
+			Name:        "convo",
+			Description: "Start an auto conversation between this bot and another",
+			Type:        discordgo.ChatApplicationCommand,
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Name:        "otherbot",
+					Description: "The other bot to have a conversation with",
+					Type:        discordgo.ApplicationCommandOptionMentionable,
+					Required:    true,
+				},
+				{
+					Name:        "amount",
+					Description: "The amount of messages to send (for each bot, so total messages will be double this)",
+					Type:        discordgo.ApplicationCommandOptionInteger,
+					Required:    true,
+				},
+				{
+					Name:        "firstmessage",
+					Description: "The first message to send",
+					Type:        discordgo.ApplicationCommandOptionString,
+					Required:    true,
+				},
+			},
+		})
+	}
+
+	_, err := session.ApplicationCommandBulkOverwrite(session.State.User.ID, "", payload)
+	if err != nil {
+		slog.With("error", err).Error("Error initializing commands")
+		panic(err)
+	}
+	slog.With("commandsCount", len(payload)).Info("Initialized commands")
 }

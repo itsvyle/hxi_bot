@@ -21,6 +21,10 @@ type ConfigSchemaJson struct {
 }
 
 type ConfigSchemaJsonAiChatServicesElem struct {
+	// If true, the bot will have the command to start an autoconversation between
+	// bots; only give it to a single bot per server or it'll break :)
+	ActivateAutoConvos bool `json:"activateAutoConvos,omitempty" yaml:"activateAutoConvos,omitempty" mapstructure:"activateAutoConvos,omitempty"`
+
 	// BotName corresponds to the JSON schema field "botName".
 	BotName string `json:"botName" yaml:"botName" mapstructure:"botName"`
 
@@ -68,6 +72,9 @@ func (j *ConfigSchemaJsonAiChatServicesElem) UnmarshalJSON(b []byte) error {
 	var plain Plain
 	if err := json.Unmarshal(b, &plain); err != nil {
 		return err
+	}
+	if v, ok := raw["activateAutoConvos"]; !ok || v == nil {
+		plain.ActivateAutoConvos = false
 	}
 	if v, ok := raw["killers"]; !ok || v == nil {
 		plain.Killers = []string{}
