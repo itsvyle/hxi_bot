@@ -3,10 +3,10 @@ services:
         container_name: eg
         # restart: always
         build:
-            context: .
+            context: ../.
             dockerfile: Dockerfile
         env_file:
-            - path: .env
+            - path: ../.env
               required: true
         volumes:
             - "./configs/config-estebangpt.json:/app/config.json"
@@ -14,10 +14,10 @@ services:
         container_name: eg2
         # restart: always
         build:
-            context: .
+            context: ../.
             dockerfile: Dockerfile
         env_file:
-            - path: .env
+            - path: ../.env
               required: true
         volumes:
             - "./configs/config-estebangptTest.json:/app/config.json"
