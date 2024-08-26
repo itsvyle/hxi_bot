@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"math"
 	"os"
 	"strings"
 	"time"
@@ -100,10 +101,18 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 				return
 			}
 			foundConvo := false
-			for _, convo := range ongoingConversations {
+			for i, convo := range ongoingConversations {
 				if convo.OtherBotID == message.Author.ID && convo.ChannelID == message.ChannelID {
 					convo.CurrentAmount++
 					if convo.CurrentAmount >= convo.TotalAmount {
+						// Delete this conversation
+						o := make([]*BotToBotConvo, int(math.Max(0, float64(len(ongoingConversations)-1))))
+						for j, c := range ongoingConversations {
+							if j != i {
+								o[j] = c
+							}
+						}
+						ongoingConversations = o
 						return
 					}
 					foundConvo = true
@@ -114,7 +123,7 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 			if !foundConvo {
 				return
 			}
-			time.Sleep(3 * time.Second)
+			time.Sleep(time.Duration(s.config.AutoConvosMessageDelay) * time.Millisecond)
 		}
 
 		if strings.Contains(message.Content, "!kill") {

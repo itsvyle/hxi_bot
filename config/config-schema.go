@@ -25,6 +25,9 @@ type ConfigSchemaJsonAiChatServicesElem struct {
 	// bots; only give it to a single bot per server or it'll break :)
 	ActivateAutoConvos bool `json:"activateAutoConvos,omitempty" yaml:"activateAutoConvos,omitempty" mapstructure:"activateAutoConvos,omitempty"`
 
+	// Delay in milliseconds between each message sent in autoconvos
+	AutoConvosMessageDelay int `json:"autoConvosMessageDelay,omitempty" yaml:"autoConvosMessageDelay,omitempty" mapstructure:"autoConvosMessageDelay,omitempty"`
+
 	// BotName corresponds to the JSON schema field "botName".
 	BotName string `json:"botName" yaml:"botName" mapstructure:"botName"`
 
@@ -75,6 +78,9 @@ func (j *ConfigSchemaJsonAiChatServicesElem) UnmarshalJSON(b []byte) error {
 	}
 	if v, ok := raw["activateAutoConvos"]; !ok || v == nil {
 		plain.ActivateAutoConvos = false
+	}
+	if v, ok := raw["autoConvosMessageDelay"]; !ok || v == nil {
+		plain.AutoConvosMessageDelay = 2500.0
 	}
 	if v, ok := raw["killers"]; !ok || v == nil {
 		plain.Killers = []string{}

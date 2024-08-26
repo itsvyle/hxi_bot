@@ -65,6 +65,11 @@
                         "type": "boolean",
                         "description": "If true, the bot will have the command to start an autoconversation between bots; only give it to a single bot per server or it'll break :)",
                         "default": false
+                    },
+                    "autoConvosMessageDelay": {
+                        "type": "integer",
+                        "description": "Delay in milliseconds between each message sent in autoconvos",
+                        "default": 2500
                     }
                 },
                 "required": [

@@ -1,0 +1,23 @@
+services:
+    eg:
+        container_name: eg
+        # restart: always
+        build:
+            context: .
+            dockerfile: Dockerfile
+        env_file:
+            - path: .env
+              required: true
+        volumes:
+            - "./configs/config-estebangpt.json:/app/config.json"
+    eg2:
+        container_name: eg2
+        # restart: always
+        build:
+            context: .
+            dockerfile: Dockerfile
+        env_file:
+            - path: .env
+              required: true
+        volumes:
+            - "./configs/config-estebangptTest.json:/app/config.json"
