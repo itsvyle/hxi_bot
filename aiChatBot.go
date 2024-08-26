@@ -59,7 +59,7 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 		if message.Author.ID == session.State.User.ID {
 			return
 		}
-		if !strings.Contains(message.Content, s.botTrigger) {
+		if !message.Author.Bot && !strings.Contains(message.Content, s.botTrigger) {
 			mentionsMe := false
 			for _, user := range message.Mentions {
 				if user.ID == session.State.User.ID {
