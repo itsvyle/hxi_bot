@@ -114,8 +114,12 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 	slog.Info("Initialized AI chat bot", "botName", s.config.BotName, "prompt", s.config.Prompt)
 }
 
-func (s *ServiceAiChatBot) processMessageContentInput(message string) string {
-	return strings.Replace(message, s.botTrigger, "@"+s.config.BotName, 1)
+func (s *ServiceAiChatBot) processMessageInputContent(message *discordgo.Message) string {
+	ret := strings.Replace(message.Content, s.botTrigger, "@"+s.config.BotName, 1)
+	for _, mention := range message.Mentions {
+		ret = strings.Replace(ret, fmt.Sprintf("<@%s>", mention.ID), "@"+mention.Username, 1)
+	}
+	return ret
 }
 
 func (s *ServiceAiChatBot) appendToCache(message *discordgo.Message) *AIChatbotCachedMessage {
@@ -126,7 +130,7 @@ func (s *ServiceAiChatBot) appendToCache(message *discordgo.Message) *AIChatbotC
 	m := &AIChatbotCachedMessage{
 		ID:         message.ID,
 		ChannelID:  message.ChannelID,
-		Content:    message.Content,
+		Content:    s.processMessageInputContent(message),
 		References: r,
 	}
 	s.cache = append(s.cache, m)
@@ -141,7 +145,7 @@ func (s *ServiceAiChatBot) getMessageChain(discordSession *discordgo.Session, me
 	r := make([]openai.ChatCompletionMessage, 1, s.config.MaxContextSize)
 	r[0] = openai.ChatCompletionMessage{
 		Role:    openai.ChatMessageRoleUser,
-		Content: s.processMessageContentInput(message.Content),
+		Content: s.processMessageInputContent(message),
 	}
 	i := 1
 
@@ -168,7 +172,7 @@ func (s *ServiceAiChatBot) getMessageChain(discordSession *discordgo.Session, me
 		}
 		r = append(r, openai.ChatCompletionMessage{
 			Role:    role,
-			Content: s.processMessageContentInput(m.Content),
+			Content: m.Content,
 		})
 		i++
 	}
