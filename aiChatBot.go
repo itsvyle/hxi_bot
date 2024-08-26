@@ -27,6 +27,7 @@ type AIChatbotCachedMessage struct {
 
 type ServiceAiChatBot struct {
 	config       *config.ConfigSchemaJsonAiChatServicesElem
+	myID         string
 	openAIClient *openai.Client
 	botTrigger   string
 	cache        []*AIChatbotCachedMessage
@@ -48,6 +49,7 @@ type BotToBotConvo struct {
 func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 	s.openAIClient = openai.NewClient(s.config.OpenAIAPiKey)
 
+	s.myID = discordSession.State.User.ID
 	s.botTrigger = fmt.Sprintf("<@%s>", discordSession.State.User.ID)
 
 	ongoingConversations := make([]*BotToBotConvo, 0)
@@ -88,7 +90,7 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 					slog.With("error", err).Error("Error parsing amount")
 					return
 				}
-
+				slog.Info("Received conversation start request", "botID", message.Author.ID, "amount", amount)
 				ongoingConversations = append(ongoingConversations, &BotToBotConvo{
 					OtherBotID:    message.Author.ID,
 					ChannelID:     message.ChannelID,
@@ -105,6 +107,7 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 						return
 					}
 					foundConvo = true
+					slog.Info("Continuing conversation", "botID", message.Author.ID, "currentAmount", convo.CurrentAmount, "totalAmount", convo.TotalAmount)
 					break
 				}
 			}
@@ -177,7 +180,14 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 			return
 		}
 		cmdName := interaction.ApplicationCommandData().Name
-		if cmdName != "startconvo" {
+		if cmdName != "convo" {
+			_ = session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content: "Invalid command",
+					Flags:   discordgo.MessageFlagsEphemeral,
+				},
+			})
 			return
 		}
 
@@ -220,6 +230,8 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 			}
 		}
 
+		slog.Info("Starting conversation", "botID", otherBot.ID, "amount", amount, "firstMessage", firstMessage)
+
 		ongoingConversations = append(ongoingConversations, &BotToBotConvo{
 			OtherBotID:    otherBot.ID,
 			ChannelID:     channelID,
@@ -240,7 +252,7 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 			return
 		}
 
-		time.Sleep(2 * time.Second)
+		time.Sleep(5 * time.Second)
 
 		_, err = session.ChannelMessageSend(channelID, fmt.Sprintf("<@%s> %s", otherBot.ID, firstMessage))
 		if err != nil {
@@ -254,6 +266,14 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 			})
 			return
 		}
+
+		_ = session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "Conversation started",
+				Flags:   discordgo.MessageFlagsEphemeral,
+			},
+		})
 
 	})
 
@@ -280,6 +300,7 @@ func (s *ServiceAiChatBot) appendToCache(message *discordgo.Message) *AIChatbotC
 		ChannelID:  message.ChannelID,
 		Content:    s.processMessageInputContent(message),
 		References: r,
+		Bot:        message.Author.ID == s.myID,
 	}
 	s.cache = append(s.cache, m)
 	if len(s.cache) > aiMaxCacheLength {
