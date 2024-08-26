@@ -256,7 +256,7 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 			OtherBotID:    otherBot.ID,
 			ChannelID:     channelID,
 			TotalAmount:   int(amount),
-			CurrentAmount: 0,
+			CurrentAmount: 1,
 			StartedAt:     time.Now(),
 		})
 
