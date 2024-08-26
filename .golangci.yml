@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=https://golangci-lint.run/jsonschema/golangci.jsonschema.json
+run:
+  allow-parallel-runners: false
+  tests: false
+linters:
+  disable-all: true
+  enable: # See list of linters here https://golangci-lint.run/usage/linters/
+    # Default linters
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    # General linters
+    - revive
+    - gocritic
+    - gosec
+    # - gocyclo
+    # More specific linters
+    - exhaustive
+    - usestdlibvars
+    - goimports
+linters-settings:
+  gocritic:
+    disable-all: true
+    enabled-tags:
+      - diagnostic
+      - performance
