@@ -74,6 +74,8 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 			}
 		}
 
+		slog.Info("------------------------------------------------")
+
 		if message.Author.Bot {
 			if strings.Contains(message.Content, "!start") {
 				for _, convo := range ongoingConversations {
@@ -149,8 +151,6 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 			_, _ = session.ChannelMessageSendReply(message.ChannelID, "Stopped all ongoing conversations", message.Reference())
 			return
 		}
-
-		slog.Info("------------------------------------------------")
 
 		_ = session.ChannelTyping(message.ChannelID)
 
