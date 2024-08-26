@@ -2,17 +2,24 @@ package main
 
 import (
 	"log/slog"
-	"os"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/itsvyle/hxi_bot/config"
 )
 
-func InitWatchChannelForThread(discordSession *discordgo.Session) {
-	channelID := os.Getenv("THREADS_CHANNEL_ID")
-	if channelID == "" {
-		panic("THREADS_CHANNEL_ID is not set")
+type ServiceWatchChannels struct {
+	config config.ConfigSchemaJsonChannelThreadsWatcherServicesElem
+}
+
+func CreateNewServiceWatchChannels(config config.ConfigSchemaJsonChannelThreadsWatcherServicesElem) *ServiceWatchChannels {
+	return &ServiceWatchChannels{
+		config: config,
 	}
+}
+
+func (s *ServiceWatchChannels) InitWatchChannelForThread(discordSession *discordgo.Session) {
+	channelID := s.config.ChannelId
 
 	discordSession.AddHandler(func(session *discordgo.Session, message *discordgo.MessageCreate) {
 		if message.ChannelID != channelID {
@@ -22,7 +29,7 @@ func InitWatchChannelForThread(discordSession *discordgo.Session) {
 			return
 		}
 
-		time.Sleep(1*time.Second)
+		time.Sleep(500 * time.Millisecond)
 
 		thread, err := session.MessageThreadStartComplex(message.ChannelID, message.ID, &discordgo.ThreadStart{
 			Name:                message.Content,
@@ -52,7 +59,10 @@ func InitWatchChannelForThread(discordSession *discordgo.Session) {
 			return
 		}
 	})
-
+	if !s.config.SendRenameButton {
+		slog.With("channelID", channelID).Info("Initialized watching channel for messages to create threads in channel", "renameButton", false)
+		return
+	}
 	// Handle button clicks
 	discordSession.AddHandler(func(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
 		if interaction.Type != discordgo.InteractionMessageComponent {
@@ -141,4 +151,6 @@ func InitWatchChannelForThread(discordSession *discordgo.Session) {
 			},
 		})
 	})
+	slog.With("channelID", channelID).Info("Initialized watching channel for messages to create threads in channel", "renameButton", true)
+
 }

@@ -17,5 +17,6 @@ ARG DOCKER_USER=default_user
 RUN addgroup -S $DOCKER_USER && adduser -S $DOCKER_USER -G $DOCKER_USER
 USER $DOCKER_USER
 
+ENV CONFIG_PATH=/app/config.json
 
 CMD ["/app/discord_bot_exe"]

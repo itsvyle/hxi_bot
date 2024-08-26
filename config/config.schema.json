@@ -1,0 +1,72 @@
+{
+    "type": "object",
+    "properties": {
+        "enabled": {
+            "type": "boolean"
+        },
+        "botToken": {
+            "type": "string"
+        },
+        "channelThreadsWatcherServices": {
+            "type": "array",
+            "maxItems": 1,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "channelId": {
+                        "type": "string"
+                    },
+                    "sendRenameButton": {
+                        "type": "boolean",
+                        "default": true
+                    }
+                },
+                "required": ["channelId"]
+            }
+        },
+        "aiChatServices": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "openAIAPiKey": {
+                        "type": "string"
+                    },
+                    "openAIModelName": {
+                        "type": "string"
+                    },
+                    "botName": {
+                        "type": "string"
+                    },
+                    "prompt": {
+                        "type": "string"
+                    },
+                    "maxContextSize": {
+                        "type": "integer",
+                        "default": 5
+                    },
+                    "maxTokens": {
+                        "type": "integer",
+                        "default": 150
+                    },
+                    "temperature": {
+                        "type": "number",
+                        "default": 0.8
+                    }
+                },
+                "required": [
+                    "openAIAPiKey",
+                    "openAIModelName",
+                    "botName",
+                    "prompt"
+                ]
+            }
+        }
+    },
+    "required": [
+        "enabled",
+        "botToken",
+        "channelThreadsWatcherServices",
+        "aiChatServices"
+    ]
+}
