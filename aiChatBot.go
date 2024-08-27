@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -17,6 +16,10 @@ import (
 	openai "github.com/sashabaranov/go-openai"
 )
 
+type ChatBot interface {
+	Query(messages *[]openai.ChatCompletionMessage) (string, error)
+}
+
 const aiMaxCacheLength = 100
 
 type AIChatbotCachedMessage struct {
@@ -28,12 +31,12 @@ type AIChatbotCachedMessage struct {
 }
 
 type ServiceAiChatBot struct {
-	config       *config.ConfigSchemaJsonAiChatServicesElem
-	myID         string
-	openAIClient *openai.Client
-	botTrigger   string
-	cache        []*AIChatbotCachedMessage
-	emojis       map[string]string
+	config     *config.ConfigSchemaJsonAiChatServicesElem
+	chatBot    ChatBot
+	myID       string
+	botTrigger string
+	cache      []*AIChatbotCachedMessage
+	emojis     map[string]string
 }
 
 func CreateNewServiceAiChatBot(config *config.ConfigSchemaJsonAiChatServicesElem) *ServiceAiChatBot {
@@ -52,7 +55,7 @@ type BotToBotConvo struct {
 }
 
 func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
-	s.openAIClient = openai.NewClient(s.config.OpenAIAPiKey)
+	s.chatBot = CreateNewOpenAIChatBot(s.config.OpenAIAPiKey, s.config.OpenAIModelName, s.config.MaxTokens, s.config.Temperature)
 
 	s.myID = discordSession.State.User.ID
 	s.botTrigger = fmt.Sprintf("<@%s>", discordSession.State.User.ID)
@@ -172,22 +175,13 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 			},
 		}, chain...)
 
-		resp, err := s.openAIClient.CreateChatCompletion(
-			context.Background(),
-			openai.ChatCompletionRequest{
-				Model:       s.config.OpenAIModelName,
-				Messages:    chain,
-				MaxTokens:   s.config.MaxTokens,
-				Temperature: float32(s.config.Temperature),
-			},
-		)
+		res, err := s.chatBot.Query(&chain)
 		if err != nil {
 			_, _ = session.ChannelMessageSendReply(message.ChannelID, "Error getting response from AI", message.Reference())
 			slog.With("error", err).Error("Error getting response from AI")
 			return
 		}
 
-		res := resp.Choices[0].Message.Content
 		res = strings.Replace(res, "@everyone", "`@everyone`", -1)
 		res = strings.Replace(res, "@here", "`@here`", -1)
 
@@ -281,7 +275,7 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 			StartedAt:     time.Now(),
 		})
 
-		_, err := session.ChannelMessageSend(channelID, fmt.Sprintf("<@%s> !start %d", otherBot.ID, amount))
+		startMessage, err := session.ChannelMessageSend(channelID, fmt.Sprintf("<@%s> !start %d", otherBot.ID, amount))
 		if err != nil {
 			slog.With("error", err).Error("Error staring conversation")
 			_ = session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
@@ -295,6 +289,8 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 		}
 
 		time.Sleep(3 * time.Second)
+
+		_ = session.ChannelMessageDelete(channelID, startMessage.ID)
 
 		_, err = session.ChannelMessageSend(channelID, fmt.Sprintf("<@%s> %s", otherBot.ID, firstMessage))
 		if err != nil {
