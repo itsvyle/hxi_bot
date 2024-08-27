@@ -4,7 +4,7 @@ WORKDIR /app
 COPY / /app
 RUN go mod download && go mod verify
 
-RUN --mount=type=cache,target=/root/.docker-cache/go-build \ 
+RUN --mount=type=cache,target=~/.docker-cache/go-build \ 
     go build -o /out/discord_bot_exe .
 
 FROM alpine:3.19.1
