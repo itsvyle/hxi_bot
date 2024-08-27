@@ -31,12 +31,13 @@ type AIChatbotCachedMessage struct {
 }
 
 type ServiceAiChatBot struct {
-	config     *config.ConfigSchemaJsonAiChatServicesElem
-	chatBot    ChatBot
-	myID       string
-	botTrigger string
-	cache      []*AIChatbotCachedMessage
-	emojis     map[string]string
+	config               *config.ConfigSchemaJsonAiChatServicesElem
+	chatBot              ChatBot
+	myID                 string
+	botTrigger           string
+	cache                []*AIChatbotCachedMessage
+	emojis               map[string]string
+	ongoingConversations []*BotToBotConvo
 }
 
 func CreateNewServiceAiChatBot(config *config.ConfigSchemaJsonAiChatServicesElem) *ServiceAiChatBot {
@@ -46,12 +47,12 @@ func CreateNewServiceAiChatBot(config *config.ConfigSchemaJsonAiChatServicesElem
 }
 
 type BotToBotConvo struct {
-	SelfStarted   bool
-	OtherBotID    string
-	ChannelID     string
-	TotalAmount   int
-	CurrentAmount int
-	StartedAt     time.Time
+	SelfStarted   bool      `json:"selfStarted"`
+	OtherBotID    string    `json:"otherBotID"`
+	ChannelID     string    `json:"channelID"`
+	TotalAmount   int       `json:"totalAmount"`
+	CurrentAmount int       `json:"currentAmount"`
+	StartedAt     time.Time `json:"startedAt"`
 }
 
 func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
@@ -60,7 +61,7 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 	s.myID = discordSession.State.User.ID
 	s.botTrigger = fmt.Sprintf("<@%s>", discordSession.State.User.ID)
 
-	ongoingConversations := make([]*BotToBotConvo, 0)
+	s.ongoingConversations = make([]*BotToBotConvo, 0)
 
 	emojisWithIDPattern := regexp.MustCompile(`<:(\w+):\d+>`)
 	emojisWithoutIDPattern := regexp.MustCompile(`:(\w+):`)
@@ -88,7 +89,7 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 
 		if message.Author.Bot {
 			if strings.Contains(message.Content, fmt.Sprintf("<@%s> !start", s.myID)) {
-				for _, convo := range ongoingConversations {
+				for _, convo := range s.ongoingConversations {
 					if convo.OtherBotID == message.Author.ID {
 						_, _ = session.ChannelMessageSendReply(message.ChannelID, "Already in a conversation with this bot", message.Reference())
 						slog.Info("Already in a conversation with this bot", "botID", message.Author.ID)
@@ -107,7 +108,7 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 					return
 				}
 				slog.Info("Received conversation start request", "botID", message.Author.ID, "amount", amount)
-				ongoingConversations = append(ongoingConversations, &BotToBotConvo{
+				s.ongoingConversations = append(s.ongoingConversations, &BotToBotConvo{
 					SelfStarted:   false,
 					OtherBotID:    message.Author.ID,
 					ChannelID:     message.ChannelID,
@@ -118,21 +119,21 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 				return
 			}
 			foundConvo := false
-			for _, convo := range ongoingConversations {
+			for _, convo := range s.ongoingConversations {
 				if convo.OtherBotID == message.Author.ID && convo.ChannelID == message.ChannelID {
 					convo.CurrentAmount++
 					if convo.CurrentAmount >= convo.TotalAmount {
 						slog.Info("Conversation ended", "botID", message.Author.ID, "currentAmount", convo.CurrentAmount, "totalAmount", convo.TotalAmount)
 						// Delete this conversation
-						o := make([]*BotToBotConvo, int(math.Max(0, float64(len(ongoingConversations)-1))))
+						o := make([]*BotToBotConvo, int(math.Max(0, float64(len(s.ongoingConversations)-1))))
 						j := 0
-						for _, c := range ongoingConversations {
+						for _, c := range s.ongoingConversations {
 							if c.OtherBotID != message.Author.ID {
 								o[j] = c
 								j++
 							}
 						}
-						ongoingConversations = o
+						s.ongoingConversations = o
 						return
 					}
 					foundConvo = true
@@ -157,7 +158,7 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 			}
 		}
 		if strings.Contains(message.Content, "!stop") {
-			ongoingConversations = ongoingConversations[:0]
+			s.ongoingConversations = s.ongoingConversations[:0]
 			_, _ = session.ChannelMessageSendReply(message.ChannelID, "Stopped all ongoing conversations", message.Reference())
 			return
 		}
@@ -251,7 +252,7 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 			return
 		}
 
-		for _, convo := range ongoingConversations {
+		for _, convo := range s.ongoingConversations {
 			if convo.OtherBotID == otherBot.ID {
 				_ = session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -266,7 +267,7 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 
 		slog.Info("Starting conversation", "botID", otherBot.ID, "amount", amount, "firstMessage", firstMessage)
 
-		ongoingConversations = append(ongoingConversations, &BotToBotConvo{
+		s.ongoingConversations = append(s.ongoingConversations, &BotToBotConvo{
 			SelfStarted:   true,
 			OtherBotID:    otherBot.ID,
 			ChannelID:     channelID,
@@ -479,6 +480,7 @@ type ChatbotPublicConfig struct {
 	ActivateAutoConvos     bool    `json:"activateAutoConvos"`
 	MaxContextSize         int     `json:"maxContextSize"`
 	EmojisGuildID          *string `json:"emojisGuildID"`
+	Conversations          []*BotToBotConvo
 }
 
 func (s *ServiceAiChatBot) sendConfig(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
@@ -492,6 +494,7 @@ func (s *ServiceAiChatBot) sendConfig(session *discordgo.Session, interaction *d
 		ActivateAutoConvos:     s.config.ActivateAutoConvos,
 		MaxContextSize:         s.config.MaxContextSize,
 		EmojisGuildID:          s.config.GuildId,
+		Conversations:          s.ongoingConversations,
 	}
 	configBytes, err := json.MarshalIndent(config, "", "  ")
 	if err != nil {
