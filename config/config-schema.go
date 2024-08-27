@@ -31,7 +31,10 @@ type ConfigSchemaJsonAiChatServicesElem struct {
 	// BotName corresponds to the JSON schema field "botName".
 	BotName string `json:"botName" yaml:"botName" mapstructure:"botName"`
 
-	// List of user ids that can kill the bot
+	// The guild id where the bot is running; useful for emojis only right now
+	GuildId *string `json:"guildId,omitempty" yaml:"guildId,omitempty" mapstructure:"guildId,omitempty"`
+
+	// List of user ids that can !kill the bot
 	Killers []string `json:"killers,omitempty" yaml:"killers,omitempty" mapstructure:"killers,omitempty"`
 
 	// MaxContextSize corresponds to the JSON schema field "maxContextSize".

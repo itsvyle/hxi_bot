@@ -50,6 +50,9 @@ func main() {
 		aiChatsBots[i] = CreateNewServiceAiChatBot(&service)
 		aiChatsBots[i].InitAiChatBot(discordSession)
 	}
+	if len(aiChatsBots) > 0 {
+		aiChatsBots[0].InitCommands(discordSession)
+	}
 
 	slog.Info("Bot is now running.  Press CTRL-C to exit.")
 	sc := make(chan os.Signal, 1)

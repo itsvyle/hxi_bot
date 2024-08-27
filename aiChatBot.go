@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"math"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 
@@ -32,6 +33,7 @@ type ServiceAiChatBot struct {
 	openAIClient *openai.Client
 	botTrigger   string
 	cache        []*AIChatbotCachedMessage
+	emojis       map[string]string
 }
 
 func CreateNewServiceAiChatBot(config *config.ConfigSchemaJsonAiChatServicesElem) *ServiceAiChatBot {
@@ -56,6 +58,11 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 	s.botTrigger = fmt.Sprintf("<@%s>", discordSession.State.User.ID)
 
 	ongoingConversations := make([]*BotToBotConvo, 0)
+
+	emojisWithIDPattern := regexp.MustCompile(`<:(\w+):\d+>`)
+	emojisWithoutIDPattern := regexp.MustCompile(`:(\w+):`)
+
+	s.InitEmojis(discordSession)
 
 	discordSession.AddHandler(func(session *discordgo.Session, message *discordgo.MessageCreate) {
 		if message.Author.ID == session.State.User.ID {
@@ -184,6 +191,15 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 		res = strings.Replace(res, "@everyone", "`@everyone`", -1)
 		res = strings.Replace(res, "@here", "`@here`", -1)
 
+		res = emojisWithIDPattern.ReplaceAllString(res, ":$1:") // Remove all emoji IDs, to add them back
+		matches := emojisWithoutIDPattern.FindAllString(res, -1)
+		for _, match := range matches {
+			emojiName := strings.ToLower(match[1 : len(match)-1])
+			if emojiID, ok := s.emojis[emojiName]; ok {
+				res = strings.Replace(res, match, fmt.Sprintf("<:%s:%s>", emojiName, emojiID), 1)
+			}
+		}
+
 		slog.Info("AI response", "response", res)
 
 		newM, err := session.ChannelMessageSendReply(message.ChannelID, res, message.Reference())
@@ -278,7 +294,7 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 			return
 		}
 
-		time.Sleep(5 * time.Second)
+		time.Sleep(3 * time.Second)
 
 		_, err = session.ChannelMessageSend(channelID, fmt.Sprintf("<@%s> %s", otherBot.ID, firstMessage))
 		if err != nil {
@@ -302,8 +318,6 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 		})
 
 	})
-
-	s.InitCommands(discordSession)
 
 	slog.Info("Initialized AI chat bot", "botName", s.config.BotName, "prompt", s.config.Prompt)
 }
@@ -443,6 +457,23 @@ func (s *ServiceAiChatBot) InitCommands(session *discordgo.Session) {
 	slog.With("commandsCount", len(payload)).Info("Initialized commands")
 }
 
+func (s *ServiceAiChatBot) InitEmojis(session *discordgo.Session) {
+	if s.config.GuildId == nil {
+		return
+	}
+	s.emojis = make(map[string]string)
+	emojis, err := session.GuildEmojis(*s.config.GuildId)
+	if err != nil {
+		slog.With("error", err).Error("Error getting emojis")
+		return
+	}
+
+	for _, emoji := range emojis {
+		s.emojis[emoji.Name] = emoji.ID
+	}
+	slog.With("emojisCount", len(s.emojis), "guildID", s.config.GuildId).Info("Initialized emojis")
+}
+
 type ChatbotPublicConfig struct {
 	BotName                string  `json:"botName"`
 	Prompt                 string  `json:"prompt"`
@@ -451,6 +482,7 @@ type ChatbotPublicConfig struct {
 	AutoConvosMessageDelay int     `json:"autoConvosMessageDelay"`
 	ActivateAutoConvos     bool    `json:"activateAutoConvos"`
 	MaxContextSize         int     `json:"maxContextSize"`
+	EmojisGuildID          *string `json:"emojisGuildID"`
 }
 
 func (s *ServiceAiChatBot) sendConfig(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
@@ -463,6 +495,7 @@ func (s *ServiceAiChatBot) sendConfig(session *discordgo.Session, interaction *d
 		AutoConvosMessageDelay: s.config.AutoConvosMessageDelay,
 		ActivateAutoConvos:     s.config.ActivateAutoConvos,
 		MaxContextSize:         s.config.MaxContextSize,
+		EmojisGuildID:          s.config.GuildId,
 	}
 	configBytes, err := json.MarshalIndent(config, "", "  ")
 	if err != nil {

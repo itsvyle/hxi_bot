@@ -70,6 +70,10 @@
                         "type": "integer",
                         "description": "Delay in milliseconds between each message sent in autoconvos",
                         "default": 2500
+                    },
+                    "guildId": {
+                        "type": "string",
+                        "description": "The guild id where the bot is running; useful for emojis only right now"
                     }
                 },
                 "required": [

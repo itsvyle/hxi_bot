@@ -12,7 +12,8 @@
             "maxTokens": 150,
             "temperature": 0.8,
             "killers": ["621802826418487309", "312935256594579458"],
-            "activateAutoConvos": false
+            "activateAutoConvos": false,
+            "guildId": "876742071900340254"
         }
     ]
 }
