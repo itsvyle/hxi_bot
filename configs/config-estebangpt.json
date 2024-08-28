@@ -13,7 +13,7 @@
             "temperature": 0.8,
             "killers": ["621802826418487309", "312935256594579458"],
             "activateAutoConvos": true,
-            "maxContextSize": 7,
+            "maxContextSize": 10,
             "guildId": "876742071900340254"
         }
     ]
