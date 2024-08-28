@@ -189,8 +189,8 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 		res = emojisWithIDPattern.ReplaceAllString(res, ":$1:") // Remove all emoji IDs, to add them back
 		matches := emojisWithoutIDPattern.FindAllString(res, -1)
 		for _, match := range matches {
-			emojiName := strings.ToLower(match[1 : len(match)-1])
-			if emojiID, ok := s.emojis[emojiName]; ok {
+			emojiName := match[1 : len(match)-1]
+			if emojiID, ok := s.emojis[strings.ToLower(emojiName)]; ok {
 				res = strings.Replace(res, match, fmt.Sprintf("<:%s:%s>", emojiName, emojiID), 1)
 			}
 		}
@@ -466,7 +466,7 @@ func (s *ServiceAiChatBot) InitEmojis(session *discordgo.Session) {
 	}
 
 	for _, emoji := range emojis {
-		s.emojis[emoji.Name] = emoji.ID
+		s.emojis[strings.ToLower(emoji.Name)] = emoji.ID
 	}
 	slog.With("emojisCount", len(s.emojis), "guildID", s.config.GuildId).Info("Initialized emojis")
 }
