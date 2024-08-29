@@ -10,8 +10,8 @@ services:
               required: true
         volumes:
             - "./config-estebangpt.json:/app/config.json"
-    eg2:
-        container_name: eg2
+    jg:
+        container_name: jg
         # restart: always
         build:
             context: ../.
@@ -20,4 +20,4 @@ services:
             - path: ../.env
               required: true
         volumes:
-            - "./config-estebangptTest.json:/app/config.json"
+            - "./config-juliettegpt.json:/app/config.json"
