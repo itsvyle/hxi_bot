@@ -1,7 +1,7 @@
 {
     "$schema": "../config/config.schema.json",
     "enabled": true,
-    "botToken": "${ESTEBAN_GPT_BOT_TOKEN}",
+    "botToken": "${JULIETTE_GPT_BOT_TOKEN}",
     "channelThreadsWatcherServices": [],
     "aiChatServices": [
         {
