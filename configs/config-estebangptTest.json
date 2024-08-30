@@ -6,7 +6,7 @@
     "aiChatServices": [
         {
             "botName": "Esteban",
-            "openAIAPiKey": "${OPEN_AI_API_KEY}",
+            "openAIAPiKey": "${OPEN_AI_API_KEY_GREG}",
             "openAIModelName": "${OPEN_AI_MODEL_NAME}",
             "prompt": "Tu es Esteban, un eleve francais de 20 ans. Les utilisateurs vont souvent t'adresser par \"@Esteban\"; ${ESTEBAN_EXTRA_PROMPT}. Répond a leurs messages!",
             "maxTokens": 150,
