@@ -68,6 +68,15 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 
 	s.InitEmojis(discordSession)
 
+	var botRoles []string
+	if s.config.GuildId != nil {
+		botMember, err := discordSession.GuildMember(*s.config.GuildId, s.myID)
+		if err == nil {
+			botRoles = make([]string, 0, len(botMember.Roles))
+			copy(botRoles, botMember.Roles)
+		}
+	}
+
 	discordSession.AddHandler(func(session *discordgo.Session, message *discordgo.MessageCreate) {
 		if message.Author.ID == session.State.User.ID {
 			return
@@ -81,7 +90,17 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 				}
 			}
 			if !mentionsMe {
-				return
+				for _, role := range message.MentionRoles {
+					for _, botRole := range botRoles {
+						if role == botRole {
+							mentionsMe = true
+							break
+						}
+					}
+				}
+				if !mentionsMe {
+					return
+				}
 			}
 		}
 
