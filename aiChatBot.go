@@ -73,9 +73,7 @@ func (s *ServiceAiChatBot) InitAiChatBot(discordSession *discordgo.Session) {
 		botMember, err := discordSession.GuildMember(*s.config.GuildId, s.myID)
 		if err == nil {
 			botRoles = make([]string, len(botMember.Roles))
-			for i, role := range botMember.Roles {
-				botRoles[i] = role
-			}
+			copy(botRoles, botMember.Roles)
 			slog.With("roles", botRoles).Info("Initialized bot roles")
 		}
 	}
