@@ -52,6 +52,9 @@ type ConfigSchemaJsonAiChatServicesElem struct {
 	// Prompt corresponds to the JSON schema field "prompt".
 	Prompt string `json:"prompt" yaml:"prompt" mapstructure:"prompt"`
 
+	// Max requests per minute for the bot
+	RpmLimit *int `json:"rpmLimit,omitempty" yaml:"rpmLimit,omitempty" mapstructure:"rpmLimit,omitempty"`
+
 	// Temperature corresponds to the JSON schema field "temperature".
 	Temperature float64 `json:"temperature,omitempty" yaml:"temperature,omitempty" mapstructure:"temperature,omitempty"`
 }

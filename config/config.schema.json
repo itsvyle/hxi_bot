@@ -74,6 +74,10 @@
                     "guildId": {
                         "type": "string",
                         "description": "The guild id where the bot is running; useful for emojis only right now"
+                    },
+                    "rpmLimit": {
+                        "type": "integer",
+                        "description": "Max requests per minute for the bot"
                     }
                 },
                 "required": [

@@ -12,6 +12,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/itsvyle/hxi_bot/config"
+	"golang.org/x/time/rate"
 
 	openai "github.com/sashabaranov/go-openai"
 )
@@ -38,6 +39,7 @@ type ServiceAiChatBot struct {
 	cache                []*AIChatbotCachedMessage
 	emojis               map[string]string
 	ongoingConversations []*BotToBotConvo
+	rateLimitter         *rate.Limiter
 }
 
 func CreateNewServiceAiChatBot(config *config.ConfigSchemaJsonAiChatServicesElem) *ServiceAiChatBot {
