@@ -85,7 +85,7 @@ func (s *ServiceGayGPT) InitGayGPT() {
 		randIndex := rand.Intn(len(s.config.PossibleAnswers))
 		answer := s.config.PossibleAnswers[randIndex]
 
-		if message.ReferencedMessage != nil {
+		if message.ReferencedMessage != nil && message.ReferencedMessage.Author.ID != session.State.User.ID {
 			_, err = session.ChannelMessageSendReply(message.ChannelID, answer, message.ReferencedMessage.Reference())
 
 			err2 := session.ChannelMessageDelete(message.ChannelID, message.ID)
