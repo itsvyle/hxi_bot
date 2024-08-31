@@ -18,6 +18,9 @@ type ConfigSchemaJson struct {
 
 	// Enabled corresponds to the JSON schema field "enabled".
 	Enabled bool `json:"enabled" yaml:"enabled" mapstructure:"enabled"`
+
+	// GayGPTServices corresponds to the JSON schema field "gayGPTServices".
+	GayGPTServices []ConfigSchemaJsonGayGPTServicesElem `json:"gayGPTServices,omitempty" yaml:"gayGPTServices,omitempty" mapstructure:"gayGPTServices,omitempty"`
 }
 
 type ConfigSchemaJsonAiChatServicesElem struct {
@@ -133,6 +136,40 @@ func (j *ConfigSchemaJsonChannelThreadsWatcherServicesElem) UnmarshalJSON(b []by
 	return nil
 }
 
+type ConfigSchemaJsonGayGPTServicesElem struct {
+	// BotToken corresponds to the JSON schema field "botToken".
+	BotToken string `json:"botToken" yaml:"botToken" mapstructure:"botToken"`
+
+	// The guild id where the bot is running; useful for bot roles
+	GuildId *string `json:"guildId,omitempty" yaml:"guildId,omitempty" mapstructure:"guildId,omitempty"`
+
+	// PossibleAnswers corresponds to the JSON schema field "possibleAnswers".
+	PossibleAnswers []string `json:"possibleAnswers,omitempty" yaml:"possibleAnswers,omitempty" mapstructure:"possibleAnswers,omitempty"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ConfigSchemaJsonGayGPTServicesElem) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if _, ok := raw["botToken"]; raw != nil && !ok {
+		return fmt.Errorf("field botToken in ConfigSchemaJsonGayGPTServicesElem: required")
+	}
+	type Plain ConfigSchemaJsonGayGPTServicesElem
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["possibleAnswers"]; !ok || v == nil {
+		plain.PossibleAnswers = []string{
+			"gay",
+		}
+	}
+	*j = ConfigSchemaJsonGayGPTServicesElem(plain)
+	return nil
+}
+
 // UnmarshalJSON implements json.Unmarshaler.
 func (j *ConfigSchemaJson) UnmarshalJSON(b []byte) error {
 	var raw map[string]interface{}
@@ -158,6 +195,9 @@ func (j *ConfigSchemaJson) UnmarshalJSON(b []byte) error {
 	}
 	if len(plain.ChannelThreadsWatcherServices) > 1 {
 		return fmt.Errorf("field %s length: must be <= %d", "channelThreadsWatcherServices", 1)
+	}
+	if len(plain.GayGPTServices) > 1 {
+		return fmt.Errorf("field %s length: must be <= %d", "gayGPTServices", 1)
 	}
 	*j = ConfigSchemaJson(plain)
 	return nil

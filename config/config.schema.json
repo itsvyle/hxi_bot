@@ -87,6 +87,30 @@
                     "prompt"
                 ]
             }
+        },
+        "gayGPTServices": {
+            "type": "array",
+            "maxItems": 1,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "botToken": {
+                        "type": "string"
+                    },
+                    "possibleAnswers": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "default": ["gay"]
+                    },
+                    "guildId": {
+                        "type": "string",
+                        "description": "The guild id where the bot is running; useful for bot roles"
+                    }
+                },
+                "required": ["botToken"]
+            }
         }
     },
     "required": [

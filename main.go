@@ -41,17 +41,31 @@ func main() {
 
 	channelWatchers := make([]*ServiceWatchChannels, len(config.Config.ChannelThreadsWatcherServices))
 	aiChatsBots := make([]*ServiceAiChatBot, len(config.Config.AiChatServices))
+	gayGPTs := make([]*ServiceGayGPT, len(config.Config.GayGPTServices))
 
 	for i, service := range config.Config.ChannelThreadsWatcherServices {
 		channelWatchers[i] = CreateNewServiceWatchChannels(service)
 		channelWatchers[i].InitWatchChannelForThread(discordSession)
 	}
+
 	for i, service := range config.Config.AiChatServices {
 		aiChatsBots[i] = CreateNewServiceAiChatBot(&service)
 		aiChatsBots[i].InitAiChatBot(discordSession)
 	}
 	if len(aiChatsBots) > 0 {
 		aiChatsBots[0].InitCommands(discordSession)
+	}
+
+	for i, service := range config.Config.GayGPTServices {
+		gayGPTs[i] = CreateNewServiceGayGPT(&service)
+		gayGPTs[i].InitGayGPT()
+	}
+	if len(gayGPTs) > 0 {
+		defer func() {
+			for _, gayGPT := range gayGPTs {
+				gayGPT.Close()
+			}
+		}()
 	}
 
 	slog.Info("Bot is now running.  Press CTRL-C to exit.")

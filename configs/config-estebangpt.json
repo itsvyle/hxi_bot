@@ -16,5 +16,11 @@
             "maxContextSize": 10,
             "guildId": "876742071900340254"
         }
+    ],
+    "gayGPTServices": [
+        {
+            "botToken": "${GAY_GPT_BOT_TOKEN}",
+            "guildId": "876742071900340254"
+        }
     ]
 }
