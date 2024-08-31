@@ -20,7 +20,8 @@
     "gayGPTServices": [
         {
             "botToken": "${GAY_GPT_BOT_TOKEN}",
-            "guildId": "876742071900340254"
+            "guildId": "876742071900340254",
+            "possibleAnswers": ["gay", "pd"]
         }
     ]
 }
