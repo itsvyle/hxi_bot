@@ -1,7 +1,7 @@
 services:
     eg:
         container_name: eg
-        # restart: always
+        restart: always
         build:
             context: ../.
             dockerfile: Dockerfile
@@ -12,7 +12,7 @@ services:
             - "./config-estebangpt.json:/app/config.json"
     jg:
         container_name: jg
-        # restart: always
+        restart: always
         build:
             context: ../.
             dockerfile: Dockerfile
