@@ -21,7 +21,9 @@
                         "default": true
                     }
                 },
-                "required": ["channelId"]
+                "required": [
+                    "channelId"
+                ]
             }
         },
         "aiChatServices": {
@@ -102,14 +104,42 @@
                         "items": {
                             "type": "string"
                         },
-                        "default": ["gay"]
+                        "default": [
+                            "gay"
+                        ]
                     },
                     "guildId": {
                         "type": "string",
                         "description": "The guild id where the bot is running; useful for bot roles"
+                    },
+                    "reactTo": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "object",
+                            "properties": {
+                                "emojiIds": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "excludeChannels": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "required": [
+                                "emojiIds",
+                                "excludeChannels"
+                            ]
+                        }
                     }
                 },
-                "required": ["botToken"]
+                "required": [
+                    "botToken"
+                ]
             }
         }
     },

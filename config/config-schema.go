@@ -145,6 +145,17 @@ type ConfigSchemaJsonGayGPTServicesElem struct {
 
 	// PossibleAnswers corresponds to the JSON schema field "possibleAnswers".
 	PossibleAnswers []string `json:"possibleAnswers,omitempty" yaml:"possibleAnswers,omitempty" mapstructure:"possibleAnswers,omitempty"`
+
+	// ReactTo corresponds to the JSON schema field "reactTo".
+	ReactTo ConfigSchemaJsonGayGPTServicesElemReactTo `json:"reactTo,omitempty" yaml:"reactTo,omitempty" mapstructure:"reactTo,omitempty"`
+}
+
+type ConfigSchemaJsonGayGPTServicesElemReactTo map[string]struct {
+	// EmojiIds corresponds to the JSON schema field "emojiIds".
+	EmojiIds []string `json:"emojiIds" yaml:"emojiIds" mapstructure:"emojiIds"`
+
+	// ExcludeChannels corresponds to the JSON schema field "excludeChannels".
+	ExcludeChannels []string `json:"excludeChannels" yaml:"excludeChannels" mapstructure:"excludeChannels"`
 }
 
 // UnmarshalJSON implements json.Unmarshaler.

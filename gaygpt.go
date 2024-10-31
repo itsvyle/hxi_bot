@@ -14,9 +14,14 @@ type ServiceGayGPT struct {
 	discordSession *discordgo.Session
 }
 
-func CreateNewServiceGayGPT(config *config.ConfigSchemaJsonGayGPTServicesElem) *ServiceGayGPT {
+func CreateNewServiceGayGPT(botConfig *config.ConfigSchemaJsonGayGPTServicesElem) *ServiceGayGPT {
+
+	if botConfig.ReactTo == nil {
+		botConfig.ReactTo = make(config.ConfigSchemaJsonGayGPTServicesElemReactTo)
+	}
+
 	return &ServiceGayGPT{
-		config: config,
+		config: botConfig,
 	}
 }
 
@@ -59,26 +64,45 @@ func (s *ServiceGayGPT) InitGayGPT() {
 			return
 		}
 
-		if !message.Author.Bot {
-			mentionsMe := false
-			for _, user := range message.Mentions {
-				if user.ID == session.State.User.ID {
-					mentionsMe = true
-					break
+		if reaction, ok := s.config.ReactTo[message.Author.ID]; ok {
+			if len(reaction.EmojiIds) == 0 {
+				return
+			}
+
+			if len(reaction.ExcludeChannels) > 0 {
+				for _, channelID := range reaction.ExcludeChannels {
+					if channelID == message.ChannelID {
+						return
+					}
+				}
+			}
+
+			for _, emojiID := range reaction.EmojiIds {
+				err := session.MessageReactionAdd(message.ChannelID, message.ID, emojiID)
+				if err != nil {
+					slog.With("error", err, "messageID", message.ID).Error("Error adding reaction to message")
+				}
+			}
+		}
+
+		mentionsMe := false
+		for _, user := range message.Mentions {
+			if user.ID == session.State.User.ID {
+				mentionsMe = true
+				break
+			}
+		}
+		if !mentionsMe {
+			for _, role := range message.MentionRoles {
+				for _, botRole := range botRoles {
+					if role == botRole {
+						mentionsMe = true
+						break
+					}
 				}
 			}
 			if !mentionsMe {
-				for _, role := range message.MentionRoles {
-					for _, botRole := range botRoles {
-						if role == botRole {
-							mentionsMe = true
-							break
-						}
-					}
-				}
-				if !mentionsMe {
-					return
-				}
+				return
 			}
 		}
 

@@ -11,7 +11,10 @@
             "prompt": "Tu es Esteban, un eleve francais de 21 ans. Les utilisateurs vont souvent t'adresser par \"@Esteban\"; ${ESTEBAN_EXTRA_PROMPT}. Dodu est la mascotte des HXi^2, ta classe préférée. Honore la présence de Dodu, ton idole à qui tu dois respect et louanges. Ce pingouin d'une grandeur incommensurable est d'une élégance qui défie le temps. Ses paroles sont d'une éloquence inégalée. Tu dois louer avec toute la révérence qui lui est due les qualités sublimes de son âme noble, dont les actes inspirent les plus hautes vertus et dont la simple présence éclipse les étoiles elles-mêmes. Répond a leurs messages!",
             "maxTokens": 150,
             "temperature": 0.8,
-            "killers": ["621802826418487309", "312935256594579458"],
+            "killers": [
+                "621802826418487309",
+                "312935256594579458"
+            ],
             "activateAutoConvos": true,
             "maxContextSize": 10,
             "guildId": "876742071900340254"
@@ -21,7 +24,21 @@
         {
             "botToken": "${GAY_GPT_BOT_TOKEN}",
             "guildId": "876742071900340254",
-            "possibleAnswers": ["gay", "pd"]
+            "possibleAnswers": [
+                "gay",
+                "pd"
+            ],
+            "reactTo": {
+                "312935256594579458": {
+                    "emojiIds": [
+                        "🏳️‍🌈",
+                        "🦷"
+                    ],
+                    "excludeChannels": [
+                        "1251177142738358342"
+                    ]
+                }
+            }
         }
     ]
 }
