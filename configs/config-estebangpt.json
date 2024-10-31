@@ -41,9 +41,7 @@
                     "emojiIds": [
                         "🤓"
                     ],
-                    "excludeChannels": [
-                        "1251177142738358342"
-                    ]
+                    "excludeChannels": []
                 },
                 "966715211333660713": {
                     "emojiIds": [
@@ -56,9 +54,13 @@
                         "🇩",
                         "🇺"
                     ],
-                    "excludeChannels": [
-                        "1251177142738358342"
-                    ]
+                    "excludeChannels": []
+                },
+                "451409498276495373": {
+                    "emojiIds": [
+                        "🦆"
+                    ],
+                    "excludeChannels": []
                 }
             }
         }
