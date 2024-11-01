@@ -60,7 +60,8 @@
                             "emojis": [
                                 "🤓"
                             ],
-                            "weight": 1
+                            "weight": 1,
+                            "cooldown": 10
                         }
                     ],
                     "emptyWeight": 0,
