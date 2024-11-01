@@ -64,7 +64,7 @@
                             "cooldown": 10
                         }
                     ],
-                    "emptyWeight": 0,
+                    "emptyWeight": 24,
                     "excludeChannels": []
                 },
                 "966715211333660713": {
