@@ -30,6 +30,26 @@ func CreateNewServiceGayGPT(botConfig *config.ConfigSchemaJsonGayGPTServicesElem
 	}
 }
 
+func MatchWordLetters(word string, toMatch string) bool {
+	toMatch = strings.ToLower(toMatch)
+	step := 0
+	l := len(word)
+
+	for i, _ := range toMatch {
+		// if toMatch[i] == ' ' { // want all the letters to be in order in a single given word
+		// 	step = 0
+		// }
+		if toMatch[i] == word[step] {
+			step++
+			if step >= l {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
 func (s *ServiceGayGPT) InitGayGPT() {
 	var err error
 	s.discordSession, err = discordgo.New("Bot " + s.config.BotToken)
@@ -74,7 +94,7 @@ func (s *ServiceGayGPT) InitGayGPT() {
 		if message.Content != "" {
 			c := strings.ToLower(message.Content)
 			for trigger, reactWith := range s.config.AutoReactTrigger {
-				if strings.Contains(c, trigger) {
+				if MatchWordLetters(trigger, c) {
 					session.MessageReactionAdd(message.ChannelID, message.ID, reactWith)
 				}
 			}
