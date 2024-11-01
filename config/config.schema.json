@@ -179,6 +179,13 @@
                                 "excludeChannels"
                             ]
                         }
+                    },
+                    "autoReactTrigger": {
+                        "description": "Automatically react to messages containing a certain word; key is word, value is emoji; all keys in lowercase pls",
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
                     }
                 },
                 "required": [

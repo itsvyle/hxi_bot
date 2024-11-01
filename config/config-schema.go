@@ -138,6 +138,10 @@ func (j *ConfigSchemaJsonChannelThreadsWatcherServicesElem) UnmarshalJSON(b []by
 }
 
 type ConfigSchemaJsonGayGPTServicesElem struct {
+	// Automatically react to messages containing a certain word; key is word, value
+	// is emoji; all keys in lowercase pls
+	AutoReactTrigger ConfigSchemaJsonGayGPTServicesElemAutoReactTrigger `json:"autoReactTrigger,omitempty" yaml:"autoReactTrigger,omitempty" mapstructure:"autoReactTrigger,omitempty"`
+
 	// BotToken corresponds to the JSON schema field "botToken".
 	BotToken string `json:"botToken" yaml:"botToken" mapstructure:"botToken"`
 
@@ -150,6 +154,10 @@ type ConfigSchemaJsonGayGPTServicesElem struct {
 	// ReactTo corresponds to the JSON schema field "reactTo".
 	ReactTo ConfigSchemaJsonGayGPTServicesElemReactTo `json:"reactTo,omitempty" yaml:"reactTo,omitempty" mapstructure:"reactTo,omitempty"`
 }
+
+// Automatically react to messages containing a certain word; key is word, value is
+// emoji; all keys in lowercase pls
+type ConfigSchemaJsonGayGPTServicesElemAutoReactTrigger map[string]string
 
 type ConfigSchemaJsonGayGPTServicesElemReactTo map[string]struct {
 	// TotalWeight corresponds to the JSON schema field "_totalWeight".

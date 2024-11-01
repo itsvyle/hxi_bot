@@ -3,6 +3,7 @@ package main
 import (
 	"log/slog"
 	"math/rand"
+	"strings"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -18,6 +19,9 @@ func CreateNewServiceGayGPT(botConfig *config.ConfigSchemaJsonGayGPTServicesElem
 
 	if botConfig.ReactTo == nil {
 		botConfig.ReactTo = make(config.ConfigSchemaJsonGayGPTServicesElemReactTo)
+	}
+	if botConfig.AutoReactTrigger == nil {
+		botConfig.AutoReactTrigger = make(config.ConfigSchemaJsonGayGPTServicesElemAutoReactTrigger)
 	}
 	botConfig.ReactTo.Init()
 
@@ -66,6 +70,15 @@ func (s *ServiceGayGPT) InitGayGPT() {
 		}
 
 		s.config.ReactTo.ReactWithEmoji(session, message)
+
+		if message.Content != "" {
+			c := strings.ToLower(message.Content)
+			for trigger, reactWith := range s.config.AutoReactTrigger {
+				if strings.Contains(c, trigger) {
+					session.MessageReactionAdd(message.ChannelID, message.ID, reactWith)
+				}
+			}
+		}
 
 		mentionsMe := false
 		for _, user := range message.Mentions {

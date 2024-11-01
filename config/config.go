@@ -1,7 +1,6 @@
 package config
 
 import (
-	"encoding/json"
 	"fmt"
 	"log/slog"
 	"math/rand"
@@ -62,11 +61,8 @@ func (r *ConfigSchemaJsonGayGPTServicesElemReactTo) Init() {
 		(*r)[key] = value
 	}
 
-	data, err := json.MarshalIndent(*r, "", "  ")
-	if err != nil {
-		// Handle error
-	}
-	fmt.Println(string(data))
+	// data, _ := json.MarshalIndent(*r, "", "  ")
+	// fmt.Println(string(data))
 }
 
 func (r *ConfigSchemaJsonGayGPTServicesElemReactTo) ReactWithEmoji(session *discordgo.Session, message *discordgo.MessageCreate) {

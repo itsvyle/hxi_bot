@@ -3,8 +3,7 @@
     "enabled": true,
     "botToken": "${ESTEBAN_GPT_BOT_TOKEN}",
     "channelThreadsWatcherServices": [],
-    "aiChatServices": [],
-    "aiChatServices_": [
+    "aiChatServices": [
         {
             "botName": "Esteban",
             "openAIAPiKey": "${OPEN_AI_API_KEY_GREG}",
@@ -98,7 +97,23 @@
                     ],
                     "emptyWeight": 0,
                     "excludeChannels": []
+                },
+                "475332124711321611": {
+                    "emojis": [
+                        {
+                            "emojis": [
+                                "racist:1271120530619240493"
+                            ],
+                            "weight": 2
+                        }
+                    ],
+                    "emptyWeight": 2,
+                    "excludeChannels": []
                 }
+            },
+            "autoReactTrigger": {
+                "dodu": "dodu:893591003867541534",
+                "udod": "udoD:1281547491535360011"
             }
         }
     ]
