@@ -36,9 +36,9 @@ func MatchWordLetters(word string, toMatch string) bool {
 	l := len(word)
 
 	for i, _ := range toMatch {
-		// if toMatch[i] == ' ' { // want all the letters to be in order in a single given word
-		// 	step = 0
-		// }
+		if toMatch[i] == ' ' { // want all the letters to be in order in a single given word
+			step = 0
+		}
 		if toMatch[i] == word[step] {
 			step++
 			if step >= l {
