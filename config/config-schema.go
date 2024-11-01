@@ -4,6 +4,7 @@ package config
 
 import "encoding/json"
 import "fmt"
+import "time"
 
 type ConfigSchemaJson struct {
 	// AiChatServices corresponds to the JSON schema field "aiChatServices".
@@ -151,8 +152,17 @@ type ConfigSchemaJsonGayGPTServicesElem struct {
 }
 
 type ConfigSchemaJsonGayGPTServicesElemReactTo map[string]struct {
-	// EmojiIds corresponds to the JSON schema field "emojiIds".
-	EmojiIds []string `json:"emojiIds" yaml:"emojiIds" mapstructure:"emojiIds"`
+	// TotalWeight corresponds to the JSON schema field "_totalWeight".
+	TotalWeight int `json:"_totalWeight,omitempty" yaml:"_totalWeight,omitempty" mapstructure:"_totalWeight,omitempty"`
+
+	// Weights corresponds to the JSON schema field "_weights".
+	Weights []int `json:"_weights,omitempty" yaml:"_weights,omitempty" mapstructure:"_weights,omitempty"`
+
+	// Emojis corresponds to the JSON schema field "emojis".
+	Emojis []EmojisElem `json:"emojis" yaml:"emojis" mapstructure:"emojis"`
+
+	// Weight of not reacting
+	EmptyWeight int `json:"emptyWeight" yaml:"emptyWeight" mapstructure:"emptyWeight"`
 
 	// ExcludeChannels corresponds to the JSON schema field "excludeChannels".
 	ExcludeChannels []string `json:"excludeChannels" yaml:"excludeChannels" mapstructure:"excludeChannels"`
@@ -211,5 +221,43 @@ func (j *ConfigSchemaJson) UnmarshalJSON(b []byte) error {
 		return fmt.Errorf("field %s length: must be <= %d", "gayGPTServices", 1)
 	}
 	*j = ConfigSchemaJson(plain)
+	return nil
+}
+
+type EmojisElem struct {
+	// Cooldown in seconds for the emoji to be used to react again
+	Cooldown int `json:"cooldown,omitempty" yaml:"cooldown,omitempty" mapstructure:"cooldown,omitempty"`
+
+	// Emojis corresponds to the JSON schema field "emojis".
+	Emojis []string `json:"emojis" yaml:"emojis" mapstructure:"emojis"`
+
+	// DONT FILL. Timestamp of the last time the emoji was used
+	LastUsed *time.Time `json:"lastUsed,omitempty" yaml:"lastUsed,omitempty" mapstructure:"lastUsed,omitempty"`
+
+	// Weight corresponds to the JSON schema field "weight".
+	Weight int `json:"weight" yaml:"weight" mapstructure:"weight"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *EmojisElem) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if _, ok := raw["emojis"]; raw != nil && !ok {
+		return fmt.Errorf("field emojis in EmojisElem: required")
+	}
+	type Plain EmojisElem
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["cooldown"]; !ok || v == nil {
+		plain.Cooldown = 0.0
+	}
+	if v, ok := raw["weight"]; !ok || v == nil {
+		plain.Weight = 1.0
+	}
+	*j = EmojisElem(plain)
 	return nil
 }

@@ -19,6 +19,7 @@ func CreateNewServiceGayGPT(botConfig *config.ConfigSchemaJsonGayGPTServicesElem
 	if botConfig.ReactTo == nil {
 		botConfig.ReactTo = make(config.ConfigSchemaJsonGayGPTServicesElemReactTo)
 	}
+	botConfig.ReactTo.Init()
 
 	return &ServiceGayGPT{
 		config: botConfig,
@@ -64,26 +65,7 @@ func (s *ServiceGayGPT) InitGayGPT() {
 			return
 		}
 
-		if reaction, ok := s.config.ReactTo[message.Author.ID]; ok {
-			if len(reaction.EmojiIds) == 0 {
-				return
-			}
-
-			if len(reaction.ExcludeChannels) > 0 {
-				for _, channelID := range reaction.ExcludeChannels {
-					if channelID == message.ChannelID {
-						return
-					}
-				}
-			}
-
-			for _, emojiID := range reaction.EmojiIds {
-				err := session.MessageReactionAdd(message.ChannelID, message.ID, emojiID)
-				if err != nil {
-					slog.With("error", err, "messageID", message.ID).Error("Error adding reaction to message")
-				}
-			}
-		}
+		s.config.ReactTo.ReactWithEmoji(session, message)
 
 		mentionsMe := false
 		for _, user := range message.Mentions {

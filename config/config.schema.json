@@ -117,10 +117,53 @@
                         "additionalProperties": {
                             "type": "object",
                             "properties": {
-                                "emojiIds": {
+                                "_weights": {
                                     "type": "array",
                                     "items": {
-                                        "type": "string"
+                                        "type": "integer"
+                                    }
+                                },
+                                "_totalWeight": {
+                                    "type": "integer",
+                                    "default": 0
+                                },
+                                "emptyWeight": {
+                                    "type": "integer",
+                                    "default": 1,
+                                    "description": "Weight of not reacting"
+                                },
+                                "emojis": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "emojis": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "weight": {
+                                                "type": "integer",
+                                                "default": 1
+                                            },
+                                            "cooldown": {
+                                                "type": "integer",
+                                                "default": 0,
+                                                "description": "Cooldown in seconds for the emoji to be used to react again"
+                                            },
+                                            "lastUsed": {
+                                                "type": [
+                                                    "string"
+                                                ],
+                                                "format": "date-time",
+                                                "description": "DONT FILL. Timestamp of the last time the emoji was used"
+                                            }
+                                        },
+                                        "required": [
+                                            "emojis",
+                                            "weight"
+                                        ]
                                     }
                                 },
                                 "excludeChannels": {
@@ -131,7 +174,8 @@
                                 }
                             },
                             "required": [
-                                "emojiIds",
+                                "emptyWeight",
+                                "emojis",
                                 "excludeChannels"
                             ]
                         }
