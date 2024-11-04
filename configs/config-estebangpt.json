@@ -104,10 +104,10 @@
                             "emojis": [
                                 "racist:1271120530619240493"
                             ],
-                            "weight": 2
+                            "weight": 1
                         }
                     ],
-                    "emptyWeight": 2,
+                    "emptyWeight": 999,
                     "excludeChannels": []
                 }
             },
