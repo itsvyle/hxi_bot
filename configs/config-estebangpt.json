@@ -29,30 +29,6 @@
                 "pd"
             ],
             "reactTo": {
-                "621802826418487309": {
-                    "emojis": [
-                        {
-                            "emojis": [
-                                "🗿"
-                            ],
-                            "weight": 1
-                        }
-                    ],
-                    "emptyWeight": 100,
-                    "excludeChannels": []
-                },
-                "312935256594579458": {
-                    "emojis": [
-                        {
-                            "emojis": [
-                                "🦷"
-                            ],
-                            "weight": 1
-                        }
-                    ],
-                    "emptyWeight": 99,
-                    "excludeChannels": []
-                },
                 "1149043144915173479": {
                     "emojis": [
                         {
@@ -98,22 +74,10 @@
                     "emptyWeight": 0,
                     "excludeChannels": []
                 },
-                "475332124711321611": {
-                    "emojis": [
-                        {
-                            "emojis": [
-                                "racist:1271120530619240493"
-                            ],
-                            "weight": 1
-                        }
-                    ],
-                    "emptyWeight": 999,
-                    "excludeChannels": []
-                }
             },
             "autoReactTrigger": {
-                "dodu": "dodu:893591003867541534",
-                "udod": "udoD:1281547491535360011"
+                "dodu": "dodu:_893591003867541534",
+                "udod": "udoD:_1281547491535360011"
             }
         }
     ]
