@@ -73,7 +73,7 @@
                     ],
                     "emptyWeight": 0,
                     "excludeChannels": []
-                },
+                }
             },
             "autoReactTrigger": {
                 "dodu": "dodu:_893591003867541534",
