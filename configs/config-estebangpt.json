@@ -40,7 +40,7 @@
                         }
                     ],
                     "emptyWeight": 100,
-                    "excludeChannels": []
+                    "excludeChannels": ["1251177142738358342"]
                 },
                 "966715211333660713": {
                     "emojis": [
@@ -60,7 +60,7 @@
                         }
                     ],
                     "emptyWeight": 34,
-                    "excludeChannels": []
+                    "excludeChannels": ["1251177142738358342"]
                 },
                 "451409498276495373": {
                     "emojis": [
@@ -72,7 +72,7 @@
                         }
                     ],
                     "emptyWeight": 0,
-                    "excludeChannels": []
+                    "excludeChannels": ["1251177142738358342"]
                 },
                 "995994176871223356": {
                     "emojis": [
