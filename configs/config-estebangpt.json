@@ -73,6 +73,17 @@
                     ],
                     "emptyWeight": 0,
                     "excludeChannels": []
+                },
+                "995994176871223356": {
+                    "emojis": [
+                        {
+                            "emojis": ["belUwU:1373680984788045934"],
+                            "weight": 1,
+                            "cooldown": 600
+                        }
+                    ],
+                    "emptyWeight": 100,
+                    "excludeChannels": ["1251177142738358342"]
                 }
             },
             "autoReactTrigger": {
