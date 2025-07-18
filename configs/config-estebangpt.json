@@ -25,8 +25,7 @@
             "botToken": "${GAY_GPT_BOT_TOKEN}",
             "guildId": "876742071900340254",
             "possibleAnswers": [
-                "gay",
-                "pd"
+                "gay"
             ],
             "reactTo": {
                 "1149043144915173479": {
