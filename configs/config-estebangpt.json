@@ -61,6 +61,22 @@
                     "emptyWeight": 34,
                     "excludeChannels": ["1251177142738358342"]
                 },
+                "324214714064306178": {
+                    "emojis": [
+                        {
+                            "emojis": [
+                                "🇷",
+                                "🇴",
+                                "🇺",
+                                "🇽"
+                            ],
+                            "weight": 1,
+                            "cooldown": 300
+                        }
+                    ],
+                    "emptyWeight": 99,
+                    "excludeChannels": ["1251177142738358342"]
+                },
                 "451409498276495373": {
                     "emojis": [
                         {
