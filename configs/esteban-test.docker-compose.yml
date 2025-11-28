@@ -10,14 +10,14 @@ services:
               required: true
         volumes:
             - "./config-estebangpt.json:/app/config.json"
-    jg:
-        container_name: jg
-        restart: always
-        build:
-            context: ../.
-            dockerfile: Dockerfile
-        env_file:
-            - path: ../.env
-              required: true
-        volumes:
-            - "./config-juliettegpt.json:/app/config.json"
+    # jg:
+    #     container_name: jg
+    #     restart: always
+    #     build:
+    #         context: ../.
+    #         dockerfile: Dockerfile
+    #     env_file:
+    #         - path: ../.env
+    #           required: true
+    #     volumes:
+    #         - "./config-juliettegpt.json:/app/config.json"
