@@ -1,13 +1,13 @@
-FROM golang:1.22.6-alpine AS builder
+FROM golang:1.25.4-alpine AS builder
 WORKDIR /app
 
 COPY / /app
 RUN go mod download && go mod verify
 
-RUN --mount=type=cache,target=~/.docker-cache/go-build \ 
+RUN --mount=type=cache,target=~/.docker-cache/go-build \
     go build -o /out/discord_bot_exe .
 
-FROM alpine:3.19.1
+FROM alpine:3.22
 
 WORKDIR /app
 
